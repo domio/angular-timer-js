@@ -1,0 +1,15 @@
+{
+    "files": [
+        "app/index.ts"
+    ],
+    "compilerOptions": {
+        "allowJs": true,
+        "module": "none",
+        "lib": ["ES5", "ES6", "DOM"],
+        "removeComments": true,
+        "noImplicitAny": false,
+        "target": "es5",
+        "out": "app.js"
+
+    }
+}
