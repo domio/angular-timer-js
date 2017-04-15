@@ -1,7 +1,7 @@
 Example Usage:
 
 ```js
-angular.module('app', ['timer.js']);
+angular.module('app', ['timer-js']);
 ```
 
 ```html
