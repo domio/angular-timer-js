@@ -10,35 +10,48 @@
         private years: number = 0;
         private months: number = 0;
         private days: number = 0;
-        private hours: number = 0;
-        private minutes: number = 0;
-        private seconds: number = 0;
+        private hours: string = '00';
+        private minutes: string = '00';
+        private seconds: string = '00';
+
         constructor(private $interval: ng.ITimeoutService,
-                     $element: ng.IRootElementService,
-                     $scope: ng.IScope,
-                     $transclude: ng.ITranscludeFunction
-        ) {
-            $transclude($scope, function(clone) {
+                    $element: ng.IRootElementService,
+                    $scope: ng.IScope,
+                    $transclude: ng.ITranscludeFunction) {
+            $transclude($scope, function (clone) {
                 $element.append(clone);
             });
         }
-        finish() {}
-        $onInit() {
+
+        finish() {
+
+        }
+        $onChanges() {
             this.start();
         }
         start() {
             this.startTime = Date.now();
-            this.endTime = this.startTime;
+            this.endTime = this.startTime + this.time * 1000;
             this.calc();
-            this.$interval(() => {
+            let promise = this.$interval(() => {
                 this.time--;
                 this.endTime = this.startTime + this.time * 1000;
                 this.calc();
-                if (this.time == 0) {
-                    this.$interval.cancel();
+                if (this.time <= 0) {
+                    this.$interval.cancel(promise);
                     this.finish();
+                    return;
                 }
             }, 1000);
+        }
+
+        numberFixedLength(input: number, length: number = 0): string {
+            let inputSting = String(input);
+            let countZero = length - inputSting.length;
+            if (countZero > 0) {
+                return '0'.repeat(countZero) + inputSting;
+            }
+            return inputSting;
         }
 
         calc() {
@@ -47,9 +60,9 @@
             this.years = Math.floor(duration.years());
             this.months = Math.floor(duration.months());
             this.days = Math.floor(duration.days());
-            this.hours = Math.floor(duration.hours());
-            this.minutes = Math.floor(duration.minutes());
-            this.seconds = Math.floor(duration.seconds());
+            this.hours = this.numberFixedLength(Math.floor(duration.hours()), 2);
+            this.minutes = this.numberFixedLength(Math.floor(duration.minutes()), 2);
+            this.seconds = this.numberFixedLength(Math.floor(duration.seconds()), 2);
         }
 
         static $inject = ['$interval', '$element', '$scope', '$transclude'];
@@ -59,7 +72,7 @@
         public controller = TimerController;
         public transclude = true;
         public bindings = {
-            time: '=',
+            time: '<',
             finish: '&'
         }
     }

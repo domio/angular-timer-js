@@ -6,7 +6,7 @@
         private i: number = 0;
 
         $onInit() {
-            this.time = 10;
+            this.time = 3;
         }
 
         finish() {
