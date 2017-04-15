@@ -4,7 +4,7 @@
 
 (function () {
     class TimerController implements ng.IComponentController {
-        private time: number;
+        private time: { interval: number };
         private startTime: number;
         private endTime: number;
         private years: number = 0;
@@ -13,34 +13,43 @@
         private hours: string = '00';
         private minutes: string = '00';
         private seconds: string = '00';
+        private interval: number = 0;
 
         constructor(private $interval: ng.ITimeoutService,
                     $element: ng.IRootElementService,
-                    $scope: ng.IScope,
+                    private $scope: ng.IScope,
                     $transclude: ng.ITranscludeFunction) {
             $transclude($scope, function (clone) {
                 $element.append(clone);
             });
-        }
-
-        finish() {
 
         }
-        $onChanges() {
-            this.start();
+
+        finish() {}
+        $onInit() {
+            this.$scope.$watch(() => {
+                return this.time.interval;
+            }, (value) => {
+                if (this.interval != value) {
+                    this.interval = value;
+                    this.start();
+                }
+            });
         }
+
         start() {
             this.startTime = Date.now();
-            this.endTime = this.startTime + this.time * 1000;
+            this.endTime = this.startTime + this.interval * 1000;
             this.calc();
             let promise = this.$interval(() => {
-                this.time--;
-                this.endTime = this.startTime + this.time * 1000;
+                this.interval--;
+                this.endTime = this.startTime + this.interval * 1000;
                 this.calc();
-                if (this.time <= 0) {
-                    this.$interval.cancel(promise);
+                if (this.interval <= 0) {
                     this.finish();
-                    return;
+                    this.$interval.cancel(promise);
+                } else {
+                    this.time.interval = this.interval;
                 }
             }, 1000);
         }

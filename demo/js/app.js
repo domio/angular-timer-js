@@ -5,34 +5,45 @@
     var TimerController = (function () {
         function TimerController($interval, $element, $scope, $transclude) {
             this.$interval = $interval;
+            this.$scope = $scope;
             this.years = 0;
             this.months = 0;
             this.days = 0;
             this.hours = '00';
             this.minutes = '00';
             this.seconds = '00';
+            this.interval = 0;
             $transclude($scope, function (clone) {
                 $element.append(clone);
             });
         }
-        TimerController.prototype.finish = function () {
-        };
-        TimerController.prototype.$onChanges = function () {
-            this.start();
+        TimerController.prototype.finish = function () { };
+        TimerController.prototype.$onInit = function () {
+            var _this = this;
+            this.$scope.$watch(function () {
+                return _this.time.interval;
+            }, function (value) {
+                if (_this.interval != value) {
+                    _this.interval = value;
+                    _this.start();
+                }
+            });
         };
         TimerController.prototype.start = function () {
             var _this = this;
             this.startTime = Date.now();
-            this.endTime = this.startTime + this.time * 1000;
+            this.endTime = this.startTime + this.interval * 1000;
             this.calc();
             var promise = this.$interval(function () {
-                _this.time--;
-                _this.endTime = _this.startTime + _this.time * 1000;
+                _this.interval--;
+                _this.endTime = _this.startTime + _this.interval * 1000;
                 _this.calc();
-                if (_this.time <= 0) {
-                    _this.$interval.cancel(promise);
+                if (_this.interval <= 0) {
                     _this.finish();
-                    return;
+                    _this.$interval.cancel(promise);
+                }
+                else {
+                    _this.time.interval = _this.interval;
                 }
             }, 1000);
         };
@@ -84,11 +95,13 @@
             this.i = 0;
         }
         AppController.prototype.$onInit = function () {
-            this.time = 3;
+            this.time = {
+                interval: 2
+            };
         };
         AppController.prototype.finish = function () {
             this.i++;
-            this.time = 50 * this.i;
+            this.time.interval = 10 * this.i;
         };
         return AppController;
     }());

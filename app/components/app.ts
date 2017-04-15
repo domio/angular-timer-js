@@ -2,16 +2,18 @@
 /// <reference path='../../node_modules/@types/core-js/index.d.ts' />
 (function () {
     class AppController implements ng.IComponentController {
-        private time: number;
+        private time: {interval: number};
         private i: number = 0;
 
         $onInit() {
-            this.time = 3;
+            this.time = {
+                interval: 2
+            };
         }
 
         finish() {
             this.i++;
-            this.time = 50 * this.i;
+            this.time.interval = 10 * this.i;
         }
     }
     class AppComponent implements ng.IComponentOptions {
