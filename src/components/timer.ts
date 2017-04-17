@@ -14,6 +14,7 @@
         private minutes: string = '00';
         private seconds: string = '00';
         private interval: number = 0;
+        private promiseInterval: ng.IPromise<void>;
 
         constructor(private $interval: ng.ITimeoutService,
                     $element: ng.IRootElementService,
@@ -25,7 +26,9 @@
 
         }
 
-        finish() {}
+        finish() {
+        }
+
         $onInit() {
             this.$scope.$watch(() => {
                 return this.time.interval;
@@ -40,18 +43,34 @@
         start() {
             this.startTime = Date.now();
             this.endTime = this.startTime + this.interval * 1000;
+            let startDate = Date.now(),
+                endDate;
             this.calc();
-            let promise = this.$interval(() => {
-                this.interval--;
+            this.promiseInterval = this.$interval(() => {
+                endDate = Date.now();
+                let diff = Math.floor((endDate - startDate) / 1000);
+                if (diff > 2) {
+                    this.interval -= diff;
+                } else {
+                    this.interval--;
+                }
+                if (this.interval < 0) {
+                    this.interval = 0;
+                }
+                startDate = endDate;
                 this.endTime = this.startTime + this.interval * 1000;
                 this.calc();
-                if (this.interval <= 0) {
+                if (this.interval == 0) {
                     this.finish();
-                    this.$interval.cancel(promise);
+                    this.$interval.cancel(this.promiseInterval);
                 } else {
                     this.time.interval = this.interval;
                 }
             }, 1000);
+        }
+
+        $onDestroy() {
+            this.$interval.cancel(this.promiseInterval);
         }
 
         numberFixedLength(input: number, length: number = 0): string {

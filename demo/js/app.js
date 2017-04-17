@@ -17,7 +17,8 @@
                 $element.append(clone);
             });
         }
-        TimerController.prototype.finish = function () { };
+        TimerController.prototype.finish = function () {
+        };
         TimerController.prototype.$onInit = function () {
             var _this = this;
             this.$scope.$watch(function () {
@@ -33,19 +34,34 @@
             var _this = this;
             this.startTime = Date.now();
             this.endTime = this.startTime + this.interval * 1000;
+            var startDate = Date.now(), endDate;
             this.calc();
-            var promise = this.$interval(function () {
-                _this.interval--;
+            this.promiseInterval = this.$interval(function () {
+                endDate = Date.now();
+                var diff = Math.floor((endDate - startDate) / 1000);
+                if (diff > 2) {
+                    _this.interval -= diff;
+                }
+                else {
+                    _this.interval--;
+                }
+                if (_this.interval < 0) {
+                    _this.interval = 0;
+                }
+                startDate = endDate;
                 _this.endTime = _this.startTime + _this.interval * 1000;
                 _this.calc();
-                if (_this.interval <= 0) {
+                if (_this.interval == 0) {
                     _this.finish();
-                    _this.$interval.cancel(promise);
+                    _this.$interval.cancel(_this.promiseInterval);
                 }
                 else {
                     _this.time.interval = _this.interval;
                 }
             }, 1000);
+        };
+        TimerController.prototype.$onDestroy = function () {
+            this.$interval.cancel(this.promiseInterval);
         };
         TimerController.prototype.numberFixedLength = function (input, length) {
             if (length === void 0) { length = 0; }
